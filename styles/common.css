@@ -76,6 +76,9 @@ i, .icon-container, .output {
 .hidden {
   display: none !important;
 }
+.expand {
+  right: var(--right-margin-expand) !important
+}
 .nohidden {
   display: inline !important;
 }
@@ -259,7 +262,7 @@ the script. So don't think of sanitizing them to classes */
 /* ––––––––––––––– TOP RIGHT */
 #supernerd-widget-base-monitor-coffee {
   top:var(--global_margin);
-  right:var(--right-margin);
+  right:var(--right-margin-collapse);
   width:auto;
 }
 
@@ -271,7 +274,6 @@ the script. So don't think of sanitizing them to classes */
 
 /* ––––––––––––––– BOTTOM RIGHT */
 #supernerd-widget-system-monitor-coffee {
-  bottom:var(--global_margin);
   right:var(--right-margin);
 }
 

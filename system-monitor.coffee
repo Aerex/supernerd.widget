@@ -9,8 +9,7 @@ commands =
 
 command: "echo " +
          "$(#{ commands.cpu }):::" +
-         "$(#{ commands.mem }):::" +
-         "$(#{ commands.hdd }):::" +
+         "$(#{ commands.mem }):::" + "$(#{ commands.hdd }):::" +
          "$(#{ commands.net }):::"
 
 refreshFrequency: '1s'
@@ -128,4 +127,5 @@ afterRender: (domEl) ->
 
   $(domEl).on 'click', ".widg", (e) => $(domEl).find( $($(e.target))).toggleClass('pinned')
 
-  $(domEl).on 'click', ".tray-button", (e) => $(domEl).find(".tray").toggleClass('hidden')
+  $(domEl).on 'click', ".tray-button", (e) => $(domEl).find(".tray").toggleClass('hidden'); $("#supernerd-widget-base-monitor-coffee").toggleClass('expand');
+

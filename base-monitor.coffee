@@ -7,8 +7,7 @@ commands =
   isconnected: "echo true"
   focus : "/usr/local/bin/chunkc tiling::query --window name"
   playing: "osascript -e 'tell application \"iTunes\" to if player state is playing then artist of current track & \" - \" & name of current track'"
-  time: "date +\"%H:%M\""
-
+  time: "date +\"%I:%M %p\""
 
 command: "echo " +
          "$(#{ commands.volume }):::" +

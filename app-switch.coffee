@@ -1,32 +1,21 @@
 options =
   display: "applications" # applications | desktops
 
-commands =
-  running: "osascript -e 'tell application \"System Events\" to name of every process whose background only is false'"
-  focus: "echo $(/usr/local/bin/chunkc tiling::query --window owner)"
+command: "echo $(./supernerd.widget/scripts/spaces.sh)"
 
-command: "echo " +
-      "$(#{ commands.running }):::" +
-      "$(#{ commands.focus })"
-
-refreshFrequency: false
+refreshFrequency: 1000  
 
 render: ( ) ->
   """
-  <div class="container launcher">
-    <div class="widg" id="app-launcher">
-
-      <div class="widg pinned red" id="home">
-        <div class="icon-container" id="home-icon-container">
-         <i class="fab fa-apple" id="focus-icon"></i>
+  <div class="container">
+      <div class="widg">
+        <div class="output cyan" id="mode">
+          <div class="icon-container cyan" id="mode-icon-container">
+             <i class="fab fa-apple" id="focus-icon"></i>
+           </div>
         </div>
+        <span class="output" id="spaces">
       </div>
-
-      <div class="container hidden" id="app-list">
-        <div class='widg open' id='task'>
-          <div class="widg container" id="task-container">
-          </div>
-        </div>
       </div>
 
     </div>
@@ -34,90 +23,49 @@ render: ( ) ->
 
   """
 
-getIcon: ( processName ) -> # No spaces, no numbers in the app name.
+getIcon: ( mode ) -> # No spaces, no numbers in the app name.
   icon = switch
-#Apple Apps
-    when processName == "Finder" then "far fa-window-restore"
-    when processName == "Preview" then "fas fa-eye-dropper"
-    when processName == "Safari" then "fa fa-compass"
-    when processName == "iTunes" then "fab fa-itunes-note"
-    when processName == "Mail" then "far fa-envelope"
-    when processName == "ActivityMonitor" then "far fa-window-close"
 
-#Microsoft Office
-    when processName == "MicrosoftWord" then "fas fa-file-word"
-    when processName == "MicrosoftPowerPoint" then "fas fa-file-powerpoint"
-    when processName == "MicrosoftExcel" then "fas fa-file-excel"
-    when processName == "MicrosoftOutlook" then "fas fa-file-outlook"
-
-#Writing / Programming
-    when processName == "Atom" then "far fa-code"
-    when processName == "SublimeText" then "far fa-code"
-    when processName == "Hyper" then "far fa-terminal"
-    when processName == "iTerm" then "far fa-terminal"
-    when processName == "Terminal" then "far fa-terminal"
-
-#Music
-    when processName == "Spotify" then "fab fa-spotify"
-
-#Messaging
-    when processName == "WhatsApp" then "fab fa-whatsapp"
-    when processName == "Airmail" then "far fa-envelope"
-    when processName == "Spark" then "far fa-envelope"
+    when /bsp/i.test(mode) then "fas fa-th"
+    when /w/i.test(mode) then "fas fa-align-justify"
+    when /float/i.test(mode) then "far fa-clone"
     else "far fa-window-maximize"
-
-  if icon == "far fa-window-maximize"
-    if processName.search("Win") > -1 || processName.search("prl") > -1 #parallels apps
-      icon = "fab fa-windows"
-
-  return icon
+ 
+   return icon
 
 update: ( output, domEl ) ->
-  $("#task-container").empty()
-  output = output.split( /:::/g )
-
-  processes = output[ 0 ].split( /, / )
-  focus = output[ 1 ].split( /-/g )
-
-  processes = ['Atom','Hyper','Safari','iTunes']    #Get rid of this to get a task manager
-#  instead of an app launcher
-
-  for process in processes
-    process = process.replace(/ /g, "")
-    process = process.replace(/[0-9]/g, "")
-    process = process.trim()
-    processIcon = @getIcon(process)
-    $( "#task-container" ).append("""
-  <div class="widg" id="open /Applications/#{ process }.app">
-    <div class="icon-container" id="#{ process }-icon-container">
-      <i class="#{ processIcon }"></i>
-    </div>
-    <span class="link hidden textonly" id="#{ process }-link">#{ process }</span>
-  </div>
+  # my attempts to get monospaced spaces list:
+  [mode, spaces, focused...] = output.split '|'
+  console.log(mode)
+  processIcon = @getIcon mode
+  $("#mode-icon-container",el ).html("""
+          <i class="#{ processIcon }" id="#{mode}-icon"></i>
     """)
-  if focus[0].trim()=='?'
-    return
+  #spaces = @redraw spaces
+   
+  focused = @dotted focused.join('|'), 60
+  output = ["<span>#{focused}</span>", "<span>| #{mode}<span>" ].join('')
+  $("#spaces", el).html("  #{output}")
+
+dotted: (str, limit) ->
+  dots = "..."
+  if str.length > limit
+    str = str.substring(0,limit) + dots
+  return str
+
+redraw: (spaces) ->
+  list = spaces.split ' '
+  result = ( @decide space for space in list).join('')
+
+decide: (elem) ->
+  elem.replace /^\s+|\s+$/g, ""
+  if elem is ""
+    return """ """
   else
-    #$(domEl).find("#"+"#{focus[0].trim()}-link").parent().addClass('pinned')   #comment out this for the task manager
+    if elem[0] is "("
+      elem = elem[1...-1]
+      elem = """<span class="list active">#{elem}</span>"""
+    else
+      elem = """<span class="list inactive">#{elem}</span>"""
+    return elem
 
-toggleRefresh: (domEl, e) -> #doesnt work
-  if $(e).hasClass('pinned')
-    e.removeClass('pinned')
-    stop()
-  else
-    e.addClass('pinned')
-    start()
-
-highlight: (domEl, e) ->
-  $(e.target).parent().addClass('pinned')
-  refresh().delay(1000)
-  $(e.target).parent().removeClass('pinned')
-  refresh().delay(1000)
-
-afterRender: (domEl) ->
-  $(domEl).on 'click', "#home", => $(domEl).find("#app-list").toggleClass('open')
-
-  $(domEl).on 'click', ".launcher", (e) -> run $(e.target).attr('id')
-
-  $(domEl).on 'mouseover', "#app-list", (e) => $(domEl).find($($(e.target))).addClass('pinned')
-  $(domEl).on 'mouseout', "#app-list", (e) => $(domEl).find($($(e.target))).removeClass('pinned')
