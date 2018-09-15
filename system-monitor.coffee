@@ -9,14 +9,29 @@ commands =
 
 command: "echo " +
          "$(#{ commands.cpu }):::" +
-         "$(#{ commands.mem }):::" + "$(#{ commands.hdd }):::" +
+         "$(#{ commands.mem }):::" + 
+         "$(#{ commands.hdd }):::" +
          "$(#{ commands.net }):::"
 
 refreshFrequency: '1s'
 
 render: ( ) ->
   """
-<div class="tray hidden" id="time-tray">
+  <div class="widg" id="cpu">
+  <div class="icon-container" id='cpu-icon-container'>
+    <i class="fa fa-microchip"></i>
+  </div>
+    <span class="output" id="cpu-output"></span>
+  </div>
+
+<div class="widg" id="mem">
+  <div class="icon-container" id='mem-icon-container'>
+    <i class="fas fa-server"></i>
+    </div>
+    <span class="output" id="mem-output"></span>
+  </div>
+
+<!--<div class="tray hidden" id="time-tray">
 
   <div class="widg red" id="upl">
   <div class="icon-container" id='upl-icon-container'>
@@ -32,21 +47,7 @@ render: ( ) ->
     <span class="output" id="dwl-output"></span>
   </div>
 
-  <div class="widg" id="cpu">
-  <div class="icon-container" id='cpu-icon-container'>
-    <i class="fa fa-spinner"></i>
-  </div>
-    <span class="output" id="cpu-output"></span>
-  </div>
-
-  <div class="widg" id="mem">
-  <div class="icon-container" id='mem-icon-container'>
-    <i class="fas fa-server"></i>
-    </div>
-    <span class="output" id="mem-output"></span>
-  </div>
-
-  <div class="widg" id="hdd">
+    <div class="widg" id="hdd">
   <div class="icon-container" id='hdd-icon-container'>
     <i class="fas fa-hdd"></i>
     </div>
@@ -58,7 +59,7 @@ render: ( ) ->
     <div class="icon-container" id='sysmon-icon-container'>
       <i class="fa fa-power-off"></i>
     </div>
-</div>
+</div> -->
 
   """
 
@@ -127,5 +128,5 @@ afterRender: (domEl) ->
 
   $(domEl).on 'click', ".widg", (e) => $(domEl).find( $($(e.target))).toggleClass('pinned')
 
-  $(domEl).on 'click', ".tray-button", (e) => $(domEl).find(".tray").toggleClass('hidden'); $("#supernerd-widget-base-monitor-coffee").toggleClass('expand');
+#  $(domEl).on 'click', ".tray-button", (e) => $(domEl).find(".tray").toggleClass('hidden'); $("#supernerd-widget-base-monitor-coffee").toggleClass('expand');
 

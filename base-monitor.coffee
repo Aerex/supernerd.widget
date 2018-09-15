@@ -30,13 +30,13 @@ render: ( ) ->
       <span class="alt-text">VOL</span>
     </div>
 
-
-    <!-- <span class='output'>
+<!--
+    <span class='output'>
       <div class="bar-output toggleable" id="volume-bar-output">
         <div class="bar-output" id="volume-bar-color-output"></div>
       </div>
-    </span> -->
-
+    </span>
+-->
     <span class="output" id='volume-output'></span>
   </div>
 
@@ -160,23 +160,23 @@ handleVolume: ( domEl, volume, ismuted ) ->
     when volume <=  50 then "fa-volume-down"
     when volume <= 100 then "fa-volume-up"
 
-  #
-  # div.find("#volume").removeClass('blue')
-  # div.find("#volume").removeClass('red')
-  #
-  # if ismuted != 'true'
-  #   div.find( "#volume-output").text("#{ volume }")
-  #   div.find('#volume').addClass('blue')
-  #   div.find('#volume-icon-container').addClass('blue')
-  # else
-  #   div.find( "#volume-output").text("Muted")
-  #   volumeIcon = "fa-volume-off"
-  #   div.find('#volume').addClass('red')
-  #   div.find('#volume-icon-container').addClass('red')
+  
+   div.find("#volume").removeClass('blue')
+   div.find("#volume").removeClass('red')
+  
+   if ismuted != 'true'
+     div.find( "#volume-output").text("#{ volume }")
+     div.find('#volume').addClass('blue')
+     div.find('#volume-icon-container').addClass('blue')
+   else
+     div.find( "#volume-output").text("Muted")
+     volumeIcon = "fa-volume-off"
+     div.find('#volume').addClass('red')
+     div.find('#volume-icon-container').addClass('red')
 
-  $("#volume-output").text("#{volume}")
+  $("#volume-output").text("#{volume}%")
   $( "#volume-icon" ).html( "<i class=\"fa #{ volumeIcon }\"></i>" )
-  $( "#volume-bar-color-output" ).width( "#{volume}%" )
+#  $( "#volume-bar-color-output" ).width( "#{volume}%" )
 
 
 #
@@ -242,6 +242,6 @@ afterRender: (domEl) ->
 
   $(domEl).on 'mouseout', ".opt", (e) => $(domEl).find($($(e.target))).removeClass('pinned')
 
-  $(domEl).on 'click', ".theme-opt", (e) => @run "./supernerd.widget/scripts/selectstyle #{ $(domEl).find($($(e.target))).attr('id') }"
+  #$(domEl).on 'click', ".theme-opt", (e) => @run "./supernerd.widget/scripts/selectstyle #{ $(domEl).find($($(e.target))).attr('id') }"
 
-  # $(domEl).on 'click', ".mode-opt", (e) => $(domEl).find("##{$($(e.target)).attr('id')}").toggleClass('toggle-close')
+   #$(domEl).on 'click', ".mode-opt", (e) => $(domEl).find("##{$($(e.target)).attr('id')}").toggleClass('toggle-close')

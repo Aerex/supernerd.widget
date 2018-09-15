@@ -7,10 +7,9 @@ apiKey: "[API KEY]"
 # THE CORRECT WEATHER FOR YOUR LOCATION.
 
 # Powered by: DARKSKY   https://darksky.net/poweredby/
-
 commands =
   date  : "date +\"%a %d %b\""
-  weather : "sh ./supernerd.widget/scripts/getweather.sh '2cce4b1c672a629683665a70e987fcde' '45.4391,8.8855'"
+  weather : "sh ./supernerd.widget/scripts/getweather.sh '2cce4b1c672a629683665a70e987fcde' '30.267153,-97.724767'"
 
 iconMapping:
   "rain"                :"fas fa-tint"
@@ -42,6 +41,7 @@ render: ( ) ->
     </div>
   </div>
   <span class="output" id="weather-output">Loading...</span>
+  <span class="output" id="weather-ext-output">Loading...</span>
 
 </div>
   """
@@ -74,11 +74,12 @@ handleWeather: ( domEl, weatherdata ) ->
   data  = JSON.parse(weatherdata)
   $(domEl).find('#weather-output').text(weatherdata)
   today = data.daily?.data[0]
+  hourly = data.hourly?.data[0]
 
   return unless today?
   date  = @getDate today.time
 
-  $(domEl).find('#weather-output').text(String (Math.round(today.temperatureMax)+'°'))
+  $(domEl).find('#weather-output').text(String (Math.round(hourly.temperature)+'°'))
   $(domEl).find('#weather-ext-output').text(String(today.summary))
   $(domEl).find( "#weather-icon-container" ).html( "<i class=\"fa #{ @getIcon(today) }\"></i>" )
 
@@ -118,7 +119,7 @@ getDate: (utcTime) ->
 
 makeCommand: (apiKey, location) ->
   exclude  = "minutely,hourly,alerts,flags"
-  "curl -sS 'https://api.forecast.io/forecast/#{apiKey}/#{location}?units=auto&exclude=#{exclude}'"
+  "curl -sS 'https://api.forecast.io/forecast/#{apiKey}/#{location}?units=us&exclude=#{exclude}'"
 
 #
 # ─── UNIVERSAL CLICK AND ANIMATION HANDLING  ─────────────────────────────────────────────────────────
