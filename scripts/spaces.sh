@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/bin/sh
+
+PATH=$HOME/.nix-profile/bin:$PATH
 
 # Attemps to return:
 # LHS | MHS | RHS
@@ -8,113 +10,78 @@
 #
 # Tries chunkc first, falls back to kwmc
 
-get_chunk() {
-    chunkc=/usr/local/bin/chunkc
+get_yabai() {
+  yabai=$(which yabai)
+  jq=$(which jq)
 
-    # Test if chunkc is active/exists first
+  # Test to see if yabai file exists 
+  if ! [ -x "$(command -v yabai)" ]; then
+    echo "{\"error\":\"yabai binary not found\"}"
+    exit 1
+  fi
+
+  if ! [ -x "$(command -v jq)" ]; then
+    echo "{\"error\":\"jq binary not found\"}"
+    exit 1
+  fi
+    #TODO Find a way to detrmine if yabai is active
+    # Test if yabai is active/exists first
     # Exit if not running so spaces.sh can handle it
-    if ! MODE=$($chunkc tiling::query -d mode)
-    then
-        return 1
-    fi
+    # if ! MODE=$($yabai -m query --spaces)
+    # then
+    #     return 1
+    # fi
+
+    # Test if jq exists
+    # if [[ ! -z $(command -v $(which jq) 2>/dev/null) ]]; then
+    #   return 1
+    # fi
 
     # LHS:
     # Get tiling mode + number of windows in monocle
-    case $MODE in
-        bsp)
-            LHS="bsp"
-            ;;
-        float)
-            LHS="float"
-            ;;
-        monocle)
-            # list of windows (use for monocle)
-            WINDOWS=$($chunkc tiling::query -d windows | /usr/bin/sed '/(invalid)/d')
-			NUM_WIN=$(echo "$WINDOWS" | wc -l | tr -d ' ')
-            LHS="[""$NUM_WIN"w"]"
-            ;;
-        *)
-            LHS="[ ]"
-            ;;
-    esac
+    LHS=$($yabai -m query --spaces --space | jq -r '.type')
+
+    # case $MODE in
+    #     bsp)
+    #         LHS="bsp"
+    #         ;;
+    #     float)
+    #         LHS="float"
+    #         ;;
+    #     # monocle)
+    #     #     # list of windows (use for monocle)
+    #     #     WINDOWS=$($chunkc tiling::query -d windows | /usr/bin/sed '/(invalid)/d')
+			# # NUM_WIN=$(echo "$WINDOWS" | wc -l | tr -d ' ')
+    #     #     LHS="[""$NUM_WIN"w"]"
+    #     #     ;;
+    #     *)
+    #         LHS="[ ]"
+    #         ;;
+    # esac
 
     # MHS:
     # Get list of spaces, and surround active space with ()
     # NOTE - this route is frackin' killing chunkwm so ... (?)
-    MONITOR="$($chunkc tiling::query -m id)"
-    SPACES="$($chunkc tiling::query --desktops-for-monitor $MONITOR)"
-    MHS=$(echo $SPACES | sed "s|\($($chunkc tiling::query -d id)\)|(\1)|")
+    #SPACES="$($chunkc tiling::query --desktops-for-monitor $MONITOR)"
+    #SPACES="$($yabai -m query --space)
+    #MHS=$(echo $SPACES | sed "s|\($($chunkc tiling::query -d id)\)|(\1)|")
     #MHS="$($chunkc tiling::query -d id)"
-    MHS="$MHS"
+    MHS=$(yabai -m query --spaces | jq -r '.[].index' | awk 'BEGIN {ORS=" "} {print $1 " "}')
 
 
     # RHS:
     # get name of focused window
-    RHS=$($chunkc tiling::query -w tag)
+    RHS=$(yabai -m query --windows --window | jq -r '.app')
     if [[ -z "$RHS" ]]; then RHS="~~"; fi
 
-    echo "$LHS | $MHS | $RHS"
+    echo "{\"lhs\":\"$LHS\", \"mhs\": \"$MHS\", \"rhs\": \"$RHS\"}"
+
+    # echo "$LHS | $MHS | $RHS"
 }
 
-get_kwm() {
-    kwmc=/usr/local/bin/kwmc
 
-    # get active and previous space
-    if ! active=$($kwmc query space active id)
-    then
-        return 1
-    fi
-
-    # get array of spaces
-    spaces=()
-    i=0
-    while read -r line
-    do
-        spaces[i]="$line"
-        (( i++ ))
-    done <<< "$($kwmc query space list)"
-
-    # populate bar with icons
-    bar=()
-    for (( i = 0; i < ${#spaces[@]}; i++ ))
-    do
-        if [[ ${spaces[$i]} == *"[no tag]" ]] #|| "$i" -lt 5 ]]
-        then
-            bar[$i]=$(($i+1))
-        else
-            if [[ "$i" == "9" ]]
-            then
-                id="${spaces[$i]:4}"
-            else
-                id="${spaces[$i]:3}"
-            fi
-            # bar[$i]="$(echo $id | tr '[:lower:]' '[:upper:]')"
-            bar[$i]="$[$i+1]/$id"
-        fi
-    done
-
-    # style active and previous space icons
-    bbar=()
-    for (( i = 0; i < ${#bar[@]}; i++ ))
-    do
-        if [[ $(($i+1)) == "$active" ]]
-        then
-            bbar[(($i*3+1))]="("${bar[$i]}")"
-        else
-            bbar[(($i*3+1))]=" ${bar[$i]} "
-        fi
-    done
-
-    MODE="$($kwmc query space active mode)"
-    SPACES="$(echo ${bbar[*]})"
-
-    echo "$MODE | $SPACES"
-}
-
-if ! get_chunk 2>/dev/null
-then
-    if ! get_kwm 2>/dev/null
-    then
-        echo "[ ] | (0) | rip wms :/"
-    fi
+get_yabai
+code=$?
+if [ $code != 0 ]; then
+  echo "[ ] | (0) | rip wms :/"
 fi
